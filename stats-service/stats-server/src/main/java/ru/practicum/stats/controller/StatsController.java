@@ -15,6 +15,9 @@ import ru.practicum.stats.dto.ViewStats;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Operations for recording endpoint requests and retrieving view statistics.
+ */
 public interface StatsController {
     /**
      * Saves information about a request to another service endpoint.
