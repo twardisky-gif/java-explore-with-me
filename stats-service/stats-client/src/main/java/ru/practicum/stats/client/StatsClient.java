@@ -7,6 +7,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.stats.dto.EndpointHit;
+import ru.practicum.stats.dto.StatsDateFormat;
 import ru.practicum.stats.dto.ViewStats;
 
 import java.net.URI;
@@ -16,7 +17,7 @@ import java.util.List;
 
 public class StatsClient {
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter.ofPattern(StatsDateFormat.DATE_TIME_PATTERN);
 
     private final String serverUrl;
     private final RestTemplate restTemplate;

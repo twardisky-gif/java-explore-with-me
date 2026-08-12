@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.sql.init.mode=never"
 })
-@Import(StatsService.class)
+@Import(StatsServiceImpl.class)
 class StatsServiceIntegrationTest {
     private static final LocalDateTime START = LocalDateTime.of(2024, 1, 1, 0, 0);
     private static final LocalDateTime END = LocalDateTime.of(2024, 1, 2, 0, 0);
@@ -60,6 +60,18 @@ class StatsServiceIntegrationTest {
                 new ViewStats("main", "/events/2", 2L),
                 new ViewStats("main", "/events/1", 1L)
         );
+    }
+
+    @Test
+    void shouldUseUriAsStableOrderWhenHitsAreEqual() {
+        save("/events/2", "10.0.0.2");
+        save("/events/1", "10.0.0.1");
+
+        List<ViewStats> stats = service.getStats(START.minusSeconds(1), END, null, false);
+
+        assertThat(stats)
+                .extracting(ViewStats::getUri)
+                .containsExactly("/events/1", "/events/2");
     }
 
     @Test

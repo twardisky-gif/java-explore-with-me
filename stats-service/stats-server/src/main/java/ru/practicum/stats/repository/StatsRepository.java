@@ -15,7 +15,7 @@ public interface StatsRepository extends JpaRepository<EndpointHitEntity, Long> 
             from EndpointHitEntity hit
             where hit.timestamp between :start and :end
             group by hit.app, hit.uri
-            order by count(hit.id) desc
+            order by count(hit.id) desc, hit.uri asc, hit.app asc
             """)
     List<ViewStats> findStats(@Param("start") LocalDateTime start,
                               @Param("end") LocalDateTime end);
@@ -25,7 +25,7 @@ public interface StatsRepository extends JpaRepository<EndpointHitEntity, Long> 
             from EndpointHitEntity hit
             where hit.timestamp between :start and :end
             group by hit.app, hit.uri
-            order by count(distinct hit.ip) desc
+            order by count(distinct hit.ip) desc, hit.uri asc, hit.app asc
             """)
     List<ViewStats> findUniqueStats(@Param("start") LocalDateTime start,
                                     @Param("end") LocalDateTime end);
@@ -35,7 +35,7 @@ public interface StatsRepository extends JpaRepository<EndpointHitEntity, Long> 
             from EndpointHitEntity hit
             where hit.timestamp between :start and :end and hit.uri in :uris
             group by hit.app, hit.uri
-            order by count(hit.id) desc
+            order by count(hit.id) desc, hit.uri asc, hit.app asc
             """)
     List<ViewStats> findStatsByUris(@Param("start") LocalDateTime start,
                                     @Param("end") LocalDateTime end,
@@ -46,7 +46,7 @@ public interface StatsRepository extends JpaRepository<EndpointHitEntity, Long> 
             from EndpointHitEntity hit
             where hit.timestamp between :start and :end and hit.uri in :uris
             group by hit.app, hit.uri
-            order by count(distinct hit.ip) desc
+            order by count(distinct hit.ip) desc, hit.uri asc, hit.app asc
             """)
     List<ViewStats> findUniqueStatsByUris(@Param("start") LocalDateTime start,
                                           @Param("end") LocalDateTime end,

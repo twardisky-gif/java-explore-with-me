@@ -20,7 +20,7 @@ public class EndpointHit {
     private String ip;
 
     @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN)
     private LocalDateTime timestamp;
 
     public EndpointHit() {
