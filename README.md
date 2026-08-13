@@ -1,21 +1,20 @@
 # java-explore-with-me
-Template repository for ExploreWithMe project.
 # Explore With Me
 
-The first project stage implements a standalone statistics service. It records
-endpoint hits and returns aggregated view counts, optionally filtered by URI or
-counted by unique client IP addresses.
+Explore With Me is a multi-module event-sharing application. The main service
+manages users, categories, events, participation requests and compilations. A
+separate statistics service records endpoint hits and supplies event view counts.
 
 ## Modules
 
-- `main-service` — placeholder for the second project stage;
+- `main-service` — the main API backed by its own PostgreSQL database;
 - `stats-service/stats-dto` — shared statistics DTOs;
 - `stats-service/stats-client` — reusable HTTP client;
 - `stats-service/stats-server` — Spring Boot statistics API backed by PostgreSQL.
 
-Build the application with `mvn clean install`, then run the statistics service
-and database with `docker compose up --build`. The API is available at port
-`9090`; health is exposed at `/actuator/health`.
+Build the application with `mvn clean install`, then start both services and
+their databases with `docker compose up --build`. The main API is available on
+port `8080`, and the statistics API on port `9090`.
 
 ## Future feature
 

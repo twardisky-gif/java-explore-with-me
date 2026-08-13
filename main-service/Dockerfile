@@ -1,7 +1,6 @@
 FROM eclipse-temurin:21-jre
 
 WORKDIR /app
-
-# The main service is implemented in stage two. This image deliberately contains
-# no application logic and is not part of the stage-one Compose configuration.
-CMD ["java", "-version"]
+COPY main-service/target/main-service-*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

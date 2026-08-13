@@ -2,6 +2,7 @@
 .github
 .idea
 **/target/*
+!main-service/target/main-service-*.jar
 !stats-service/stats-server/target/stats-server-*.jar
 *.log
 *.db
