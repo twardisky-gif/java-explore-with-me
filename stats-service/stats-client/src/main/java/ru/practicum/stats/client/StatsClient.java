@@ -16,6 +16,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class StatsClient {
+    private static final int URL_START_INDEX = 0;
+    private static final int TRAILING_SLASH_LENGTH = 1;
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
             DateTimeFormatter.ofPattern(StatsDateFormat.DATE_TIME_PATTERN);
 
@@ -65,7 +67,7 @@ public class StatsClient {
 
     private static String stripTrailingSlash(String url) {
         if (url.endsWith("/")) {
-            return url.substring(0, url.length() - 1);
+            return url.substring(URL_START_INDEX, url.length() - TRAILING_SLASH_LENGTH);
         }
         return url;
     }
