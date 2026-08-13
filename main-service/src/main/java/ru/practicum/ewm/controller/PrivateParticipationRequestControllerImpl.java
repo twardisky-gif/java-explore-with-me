@@ -1,18 +1,16 @@
 package ru.practicum.ewm.controller;
 
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.ewm.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.ewm.dto.EventRequestStatusUpdateResult;
 import ru.practicum.ewm.dto.ParticipationRequestDto;
 import ru.practicum.ewm.service.RequestService;
 
 import java.util.List;
 
 @RestController
-public class RequestControllerImpl implements RequestController {
+public class PrivateParticipationRequestControllerImpl implements PrivateParticipationRequestController {
     private final RequestService requestService;
 
-    public RequestControllerImpl(RequestService requestService) {
+    public PrivateParticipationRequestControllerImpl(RequestService requestService) {
         this.requestService = requestService;
     }
 
@@ -31,14 +29,4 @@ public class RequestControllerImpl implements RequestController {
         return requestService.cancel(userId, requestId);
     }
 
-    @Override
-    public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
-        return requestService.getEventRequests(userId, eventId);
-    }
-
-    @Override
-    public EventRequestStatusUpdateResult updateRequestStatuses(Long userId, Long eventId,
-                                                                 EventRequestStatusUpdateRequest request) {
-        return requestService.updateStatuses(userId, eventId, request);
-    }
 }

@@ -8,5 +8,7 @@ import java.util.Set;
 public record NewCompilationDto(
         Set<Long> events,
         Boolean pinned,
-        @NotBlank @Size(max = 50) String title) {
+        @NotBlank
+        @Size(max = 50)
+        String title) {
 }

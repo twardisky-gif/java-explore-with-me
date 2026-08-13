@@ -10,15 +10,18 @@ public record EventFullDto(
         String annotation,
         CategoryDto category,
         long confirmedRequests,
-        @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN) LocalDateTime createdOn,
+        @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN)
+        LocalDateTime createdOn,
         String description,
-        @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN) LocalDateTime eventDate,
+        @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN)
+        LocalDateTime eventDate,
         Long id,
         UserShortDto initiator,
-        Location location,
+        LocationDto location,
         boolean paid,
         int participantLimit,
-        @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN) LocalDateTime publishedOn,
+        @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN)
+        LocalDateTime publishedOn,
         boolean requestModeration,
         EventState state,
         String title,

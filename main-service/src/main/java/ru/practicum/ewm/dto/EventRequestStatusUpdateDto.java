@@ -6,7 +6,9 @@ import ru.practicum.ewm.model.RequestStatus;
 
 import java.util.Set;
 
-public record EventRequestStatusUpdateRequest(
-        @NotEmpty Set<Long> requestIds,
-        @NotNull RequestStatus status) {
+public record EventRequestStatusUpdateDto(
+        @NotEmpty
+        Set<Long> requestIds,
+        @NotNull
+        RequestStatus status) {
 }

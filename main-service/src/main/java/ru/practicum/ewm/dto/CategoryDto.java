@@ -5,5 +5,7 @@ import jakarta.validation.constraints.Size;
 
 public record CategoryDto(
         Long id,
-        @NotBlank @Size(max = 50) String name) {
+        @NotBlank
+        @Size(max = 50)
+        String name) {
 }

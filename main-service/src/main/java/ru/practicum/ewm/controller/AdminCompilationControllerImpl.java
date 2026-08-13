@@ -3,16 +3,14 @@ package ru.practicum.ewm.controller;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.ewm.dto.CompilationDto;
 import ru.practicum.ewm.dto.NewCompilationDto;
-import ru.practicum.ewm.dto.UpdateCompilationRequest;
+import ru.practicum.ewm.dto.UpdateCompilationDto;
 import ru.practicum.ewm.service.CompilationService;
 
-import java.util.List;
-
 @RestController
-public class CompilationControllerImpl implements CompilationController {
+public class AdminCompilationControllerImpl implements AdminCompilationController {
     private final CompilationService compilationService;
 
-    public CompilationControllerImpl(CompilationService compilationService) {
+    public AdminCompilationControllerImpl(CompilationService compilationService) {
         this.compilationService = compilationService;
     }
 
@@ -22,7 +20,7 @@ public class CompilationControllerImpl implements CompilationController {
     }
 
     @Override
-    public CompilationDto updateCompilation(Long compilationId, UpdateCompilationRequest request) {
+    public CompilationDto updateCompilation(Long compilationId, UpdateCompilationDto request) {
         return compilationService.update(compilationId, request);
     }
 
@@ -31,13 +29,4 @@ public class CompilationControllerImpl implements CompilationController {
         compilationService.delete(compilationId);
     }
 
-    @Override
-    public CompilationDto getCompilation(Long compilationId) {
-        return compilationService.get(compilationId);
-    }
-
-    @Override
-    public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
-        return compilationService.getAll(pinned, from, size);
-    }
 }

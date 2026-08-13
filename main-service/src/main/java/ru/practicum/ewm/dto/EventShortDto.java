@@ -9,7 +9,8 @@ public record EventShortDto(
         String annotation,
         CategoryDto category,
         long confirmedRequests,
-        @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN) LocalDateTime eventDate,
+        @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN)
+        LocalDateTime eventDate,
         Long id,
         UserShortDto initiator,
         boolean paid,

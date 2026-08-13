@@ -3,7 +3,7 @@ package ru.practicum.ewm.service;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.dto.NewUserRequest;
+import ru.practicum.ewm.dto.NewUserDto;
 import ru.practicum.ewm.dto.UserDto;
 import ru.practicum.ewm.entity.User;
 import ru.practicum.ewm.exception.NotFoundException;
@@ -22,7 +22,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserDto create(NewUserRequest request) {
+    public UserDto create(NewUserDto request) {
         User user = new User();
         user.setEmail(request.email());
         user.setName(request.name());

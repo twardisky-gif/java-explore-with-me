@@ -4,7 +4,7 @@ import ru.practicum.ewm.dto.CategoryDto;
 import ru.practicum.ewm.dto.CompilationDto;
 import ru.practicum.ewm.dto.EventFullDto;
 import ru.practicum.ewm.dto.EventShortDto;
-import ru.practicum.ewm.dto.Location;
+import ru.practicum.ewm.dto.LocationDto;
 import ru.practicum.ewm.dto.ParticipationRequestDto;
 import ru.practicum.ewm.dto.UserDto;
 import ru.practicum.ewm.dto.UserShortDto;
@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 public final class EntityMapper {
+    private static final long NO_VIEWS = 0L;
+
     private EntityMapper() {
     }
 
@@ -38,7 +40,7 @@ public final class EntityMapper {
         return new EventFullDto(event.getAnnotation(), toCategoryDto(event.getCategory()),
                 event.getConfirmedRequests(), event.getCreatedOn(), event.getDescription(), event.getEventDate(),
                 event.getId(), toUserShortDto(event.getInitiator()),
-                new Location(event.getLatitude(), event.getLongitude()), event.isPaid(), event.getParticipantLimit(),
+                new LocationDto(event.getLatitude(), event.getLongitude()), event.isPaid(), event.getParticipantLimit(),
                 event.getPublishedOn(), event.isRequestModeration(), event.getState(), event.getTitle(), views);
     }
 
@@ -56,7 +58,7 @@ public final class EntityMapper {
     public static CompilationDto toCompilationDto(Compilation compilation, Map<Long, Long> views) {
         List<EventShortDto> events = compilation.getEvents().stream()
                 .sorted(Comparator.comparing(Event::getId))
-                .map(event -> toEventShortDto(event, views.getOrDefault(event.getId(), 0L)))
+                .map(event -> toEventShortDto(event, views.getOrDefault(event.getId(), NO_VIEWS)))
                 .toList();
         return new CompilationDto(events, compilation.getId(), compilation.isPinned(), compilation.getTitle());
     }

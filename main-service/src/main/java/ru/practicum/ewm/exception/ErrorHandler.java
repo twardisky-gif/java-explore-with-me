@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
-import ru.practicum.ewm.dto.ApiError;
+import ru.practicum.ewm.dto.ApiErrorDto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,34 +20,34 @@ import java.util.List;
 @RestControllerAdvice
 public class ErrorHandler {
     @ExceptionHandler({NotFoundException.class, NoResourceFoundException.class})
-    public ResponseEntity<ApiError> handleNotFound(Exception exception) {
+    public ResponseEntity<ApiErrorDto> handleNotFound(Exception exception) {
         return response(HttpStatus.NOT_FOUND, "The required object was not found.", exception);
     }
 
     @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ApiError> handleConflict(ConflictException exception) {
+    public ResponseEntity<ApiErrorDto> handleConflict(ConflictException exception) {
         return response(HttpStatus.CONFLICT, "For the requested operation the conditions are not met.", exception);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ApiError> handleIntegrityViolation(DataIntegrityViolationException exception) {
+    public ResponseEntity<ApiErrorDto> handleIntegrityViolation(DataIntegrityViolationException exception) {
         return response(HttpStatus.CONFLICT, "Integrity constraint has been violated.", exception);
     }
 
     @ExceptionHandler({BadRequestException.class, MethodArgumentNotValidException.class, BindException.class,
             ConstraintViolationException.class, MethodArgumentTypeMismatchException.class,
             MissingServletRequestParameterException.class, HttpMessageNotReadableException.class})
-    public ResponseEntity<ApiError> handleBadRequest(Exception exception) {
+    public ResponseEntity<ApiErrorDto> handleBadRequest(Exception exception) {
         return response(HttpStatus.BAD_REQUEST, "Incorrectly made request.", exception);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleUnexpected(Exception exception) {
+    public ResponseEntity<ApiErrorDto> handleUnexpected(Exception exception) {
         return response(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error.", exception);
     }
 
-    private ResponseEntity<ApiError> response(HttpStatus status, String reason, Exception exception) {
-        ApiError error = new ApiError(List.of(), exception.getMessage(), reason, status, LocalDateTime.now());
+    private ResponseEntity<ApiErrorDto> response(HttpStatus status, String reason, Exception exception) {
+        ApiErrorDto error = new ApiErrorDto(List.of(), exception.getMessage(), reason, status, LocalDateTime.now());
         return ResponseEntity.status(status).body(error);
     }
 }

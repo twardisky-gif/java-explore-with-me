@@ -2,8 +2,8 @@ package ru.practicum.ewm.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.ewm.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.ewm.dto.EventRequestStatusUpdateResult;
+import ru.practicum.ewm.dto.EventRequestStatusUpdateDto;
+import ru.practicum.ewm.dto.EventRequestStatusUpdateResultDto;
 import ru.practicum.ewm.dto.ParticipationRequestDto;
 import ru.practicum.ewm.entity.Event;
 import ru.practicum.ewm.entity.ParticipationRequest;
@@ -97,8 +97,8 @@ public class RequestService {
     }
 
     @Transactional
-    public EventRequestStatusUpdateResult updateStatuses(Long userId, Long eventId,
-                                                          EventRequestStatusUpdateRequest update) {
+    public EventRequestStatusUpdateResultDto updateStatuses(Long userId, Long eventId,
+                                                          EventRequestStatusUpdateDto update) {
         userService.getEntity(userId);
         Event event = getLockedEvent(eventId);
         if (!event.getInitiator().getId().equals(userId)) {
@@ -149,7 +149,7 @@ public class RequestService {
         }
         eventRepository.save(event);
         requestRepository.saveAll(requests);
-        return new EventRequestStatusUpdateResult(confirmed.stream().map(EntityMapper::toRequestDto).toList(),
+        return new EventRequestStatusUpdateResultDto(confirmed.stream().map(EntityMapper::toRequestDto).toList(),
                 rejected.stream().map(EntityMapper::toRequestDto).toList());
     }
 

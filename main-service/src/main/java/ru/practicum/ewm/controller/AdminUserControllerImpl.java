@@ -1,7 +1,7 @@
 package ru.practicum.ewm.controller;
 
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.ewm.dto.NewUserRequest;
+import ru.practicum.ewm.dto.NewUserDto;
 import ru.practicum.ewm.dto.UserDto;
 import ru.practicum.ewm.service.UserService;
 
@@ -21,7 +21,7 @@ public class AdminUserControllerImpl implements AdminUserController {
     }
 
     @Override
-    public UserDto createUser(NewUserRequest request) {
+    public UserDto createUser(NewUserDto request) {
         return userService.create(request);
     }
 

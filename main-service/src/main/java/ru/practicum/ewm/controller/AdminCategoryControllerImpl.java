@@ -5,13 +5,11 @@ import ru.practicum.ewm.dto.CategoryDto;
 import ru.practicum.ewm.dto.NewCategoryDto;
 import ru.practicum.ewm.service.CategoryService;
 
-import java.util.List;
-
 @RestController
-public class CategoryControllerImpl implements CategoryController {
+public class AdminCategoryControllerImpl implements AdminCategoryController {
     private final CategoryService categoryService;
 
-    public CategoryControllerImpl(CategoryService categoryService) {
+    public AdminCategoryControllerImpl(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
 
@@ -30,13 +28,4 @@ public class CategoryControllerImpl implements CategoryController {
         categoryService.delete(categoryId);
     }
 
-    @Override
-    public CategoryDto getCategory(Long categoryId) {
-        return categoryService.get(categoryId);
-    }
-
-    @Override
-    public List<CategoryDto> getCategories(int from, int size) {
-        return categoryService.getAll(from, size);
-    }
 }

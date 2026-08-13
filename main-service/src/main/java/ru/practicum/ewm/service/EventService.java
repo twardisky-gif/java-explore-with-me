@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.EventFullDto;
 import ru.practicum.ewm.dto.EventShortDto;
-import ru.practicum.ewm.dto.Location;
+import ru.practicum.ewm.dto.LocationDto;
 import ru.practicum.ewm.dto.NewEventDto;
-import ru.practicum.ewm.dto.UpdateEventAdminRequest;
-import ru.practicum.ewm.dto.UpdateEventUserRequest;
+import ru.practicum.ewm.dto.UpdateEventAdminDto;
+import ru.practicum.ewm.dto.UpdateEventUserDto;
 import ru.practicum.ewm.entity.Category;
 import ru.practicum.ewm.entity.Event;
 import ru.practicum.ewm.entity.User;
@@ -37,6 +37,8 @@ public class EventService {
     private static final int UNLIMITED_PARTICIPANT_LIMIT = 0;
     private static final int USER_EVENT_MIN_HOURS = 2;
     private static final int ADMIN_EVENT_MIN_HOURS = 1;
+    private static final int FIRST_RESULT = 0;
+    private static final long NO_VIEWS = 0L;
     private final EventRepository eventRepository;
     private final UserService userService;
     private final CategoryService categoryService;
@@ -70,7 +72,7 @@ public class EventService {
         event.setRequestModeration(request.requestModeration() == null || request.requestModeration());
         event.setState(EventState.PENDING);
         event.setTitle(request.title());
-        return EntityMapper.toEventFullDto(eventRepository.save(event), 0);
+        return EntityMapper.toEventFullDto(eventRepository.save(event), NO_VIEWS);
     }
 
     @Transactional(readOnly = true)
@@ -79,7 +81,8 @@ public class EventService {
         Page<Event> page = eventRepository.findByInitiatorId(userId,
                 new OffsetPageRequest(from, size, Sort.by("id")));
         Map<Long, Long> views = statsGateway.loadViews(page.getContent());
-        return page.stream().map(event -> EntityMapper.toEventShortDto(event, views.getOrDefault(event.getId(), 0L)))
+        return page.stream().map(event -> EntityMapper.toEventShortDto(
+                event, views.getOrDefault(event.getId(), NO_VIEWS)))
                 .toList();
     }
 
@@ -87,11 +90,12 @@ public class EventService {
     public EventFullDto getUserEvent(Long userId, Long eventId) {
         userService.getEntity(userId);
         Event event = getOwnedEvent(userId, eventId);
-        return EntityMapper.toEventFullDto(event, statsGateway.loadViews(List.of(event)).getOrDefault(eventId, 0L));
+        return EntityMapper.toEventFullDto(
+                event, statsGateway.loadViews(List.of(event)).getOrDefault(eventId, NO_VIEWS));
     }
 
     @Transactional
-    public EventFullDto updateByUser(Long userId, Long eventId, UpdateEventUserRequest request) {
+    public EventFullDto updateByUser(Long userId, Long eventId, UpdateEventUserDto request) {
         userService.getEntity(userId);
         Event event = getOwnedEvent(userId, eventId);
         if (event.getState() == EventState.PUBLISHED) {
@@ -109,7 +113,8 @@ public class EventService {
             event.setState(EventState.CANCELED);
         }
         Event saved = eventRepository.save(event);
-        return EntityMapper.toEventFullDto(saved, statsGateway.loadViews(List.of(saved)).getOrDefault(eventId, 0L));
+        return EntityMapper.toEventFullDto(
+                saved, statsGateway.loadViews(List.of(saved)).getOrDefault(eventId, NO_VIEWS));
     }
 
     @Transactional(readOnly = true)
@@ -122,12 +127,13 @@ public class EventService {
         Page<Event> page = eventRepository.findAll(specification,
                 new OffsetPageRequest(from, size, Sort.by("id")));
         Map<Long, Long> views = statsGateway.loadViews(page.getContent());
-        return page.stream().map(event -> EntityMapper.toEventFullDto(event, views.getOrDefault(event.getId(), 0L)))
+        return page.stream().map(event -> EntityMapper.toEventFullDto(
+                event, views.getOrDefault(event.getId(), NO_VIEWS)))
                 .toList();
     }
 
     @Transactional
-    public EventFullDto updateByAdmin(Long eventId, UpdateEventAdminRequest request) {
+    public EventFullDto updateByAdmin(Long eventId, UpdateEventAdminDto request) {
         Event event = getEvent(eventId);
         if (request.eventDate() != null) {
             validateFutureDate(request.eventDate(), ADMIN_EVENT_MIN_HOURS);
@@ -149,7 +155,8 @@ public class EventService {
             event.setState(EventState.CANCELED);
         }
         Event saved = eventRepository.save(event);
-        return EntityMapper.toEventFullDto(saved, statsGateway.loadViews(List.of(saved)).getOrDefault(eventId, 0L));
+        return EntityMapper.toEventFullDto(
+                saved, statsGateway.loadViews(List.of(saved)).getOrDefault(eventId, NO_VIEWS));
     }
 
     @Transactional(readOnly = true)
@@ -165,19 +172,20 @@ public class EventService {
         Sort databaseSort = sort == EventSort.EVENT_DATE ? Sort.by("eventDate") : Sort.by("id");
         if (sort == EventSort.VIEWS) {
             Page<Event> all = eventRepository.findAll(specification,
-                    new OffsetPageRequest(0, Integer.MAX_VALUE, databaseSort));
+                    new OffsetPageRequest(FIRST_RESULT, Integer.MAX_VALUE, databaseSort));
             Map<Long, Long> views = statsGateway.loadViews(all.getContent());
             List<Event> sorted = new ArrayList<>(all.getContent());
-            sorted.sort(Comparator.comparing((Event event) -> views.getOrDefault(event.getId(), 0L)).reversed()
+            sorted.sort(Comparator.comparing((Event event) -> views.getOrDefault(event.getId(), NO_VIEWS)).reversed()
                     .thenComparing(Event::getId));
             return slice(sorted, from, size).stream()
-                    .map(event -> EntityMapper.toEventShortDto(event, views.getOrDefault(event.getId(), 0L)))
+                    .map(event -> EntityMapper.toEventShortDto(event, views.getOrDefault(event.getId(), NO_VIEWS)))
                     .toList();
         }
         Page<Event> page = eventRepository.findAll(specification,
                 new OffsetPageRequest(from, size, databaseSort));
         Map<Long, Long> views = statsGateway.loadViews(page.getContent());
-        return page.stream().map(event -> EntityMapper.toEventShortDto(event, views.getOrDefault(event.getId(), 0L)))
+        return page.stream().map(event -> EntityMapper.toEventShortDto(
+                event, views.getOrDefault(event.getId(), NO_VIEWS)))
                 .toList();
     }
 
@@ -186,7 +194,7 @@ public class EventService {
         Event event = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED)
                 .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
         statsGateway.recordHit(uri, ip);
-        long views = statsGateway.loadViews(List.of(event)).getOrDefault(eventId, 0L);
+        long views = statsGateway.loadViews(List.of(event)).getOrDefault(eventId, NO_VIEWS);
         return EntityMapper.toEventFullDto(event, views);
     }
 
@@ -202,7 +210,7 @@ public class EventService {
     }
 
     private void applyUpdate(Event event, String annotation, Long categoryId, String description,
-                             LocalDateTime eventDate, Location location, Boolean paid, Integer participantLimit,
+                             LocalDateTime eventDate, LocationDto location, Boolean paid, Integer participantLimit,
                              Boolean requestModeration, String title) {
         if (annotation != null) {
             event.setAnnotation(annotation);

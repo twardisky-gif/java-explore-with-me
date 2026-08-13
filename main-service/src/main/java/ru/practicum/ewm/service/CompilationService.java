@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.CompilationDto;
 import ru.practicum.ewm.dto.NewCompilationDto;
-import ru.practicum.ewm.dto.UpdateCompilationRequest;
+import ru.practicum.ewm.dto.UpdateCompilationDto;
 import ru.practicum.ewm.entity.Compilation;
 import ru.practicum.ewm.entity.Event;
 import ru.practicum.ewm.exception.NotFoundException;
@@ -25,6 +25,7 @@ import java.util.Set;
 
 @Service
 public class CompilationService {
+    private static final int FIRST_POSITION = 0;
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
     private final StatsGateway statsGateway;
@@ -47,7 +48,7 @@ public class CompilationService {
     }
 
     @Transactional
-    public CompilationDto update(Long compilationId, UpdateCompilationRequest request) {
+    public CompilationDto update(Long compilationId, UpdateCompilationDto request) {
         Compilation compilation = getEntity(compilationId);
         if (request.title() != null) {
             compilation.setTitle(request.title());
@@ -85,7 +86,7 @@ public class CompilationService {
         }
         List<Compilation> compilations = compilationRepository.findByIdIn(compilationIds);
         Map<Long, Integer> positions = new HashMap<>();
-        for (int index = 0; index < compilationIds.size(); index++) {
+        for (int index = FIRST_POSITION; index < compilationIds.size(); index++) {
             positions.put(compilationIds.get(index), index);
         }
         compilations.sort(Comparator.comparingInt(compilation -> positions.get(compilation.getId())));

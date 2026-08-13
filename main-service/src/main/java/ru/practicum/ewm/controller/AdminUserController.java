@@ -10,31 +10,37 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import ru.practicum.ewm.dto.NewUserRequest;
+import ru.practicum.ewm.dto.NewUserDto;
 import ru.practicum.ewm.dto.UserDto;
 
 import java.util.List;
+
+import static ru.practicum.ewm.controller.ControllerConstants.DEFAULT_FROM;
+import static ru.practicum.ewm.controller.ControllerConstants.DEFAULT_SIZE;
+import static ru.practicum.ewm.controller.ControllerConstants.MIN_FROM;
 
 /**
  * Administrative operations for users.
  */
 @Validated
+@RequestMapping("/admin/users")
 public interface AdminUserController {
     /** Returns users selected by identifiers and pagination. */
-    @GetMapping("/admin/users")
+    @GetMapping
     List<UserDto> getUsers(@RequestParam(required = false) List<Long> ids,
-                           @RequestParam(defaultValue = "0") @Min(0) int from,
-                           @RequestParam(defaultValue = "10") @Positive int size);
+                           @RequestParam(defaultValue = DEFAULT_FROM) @Min(MIN_FROM) int from,
+                           @RequestParam(defaultValue = DEFAULT_SIZE) @Positive int size);
 
     /** Registers a user. */
-    @PostMapping("/admin/users")
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    UserDto createUser(@Valid @RequestBody NewUserRequest request);
+    UserDto createUser(@Valid @RequestBody NewUserDto request);
 
     /** Deletes a user. */
-    @DeleteMapping("/admin/users/{userId}")
+    @DeleteMapping("/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteUser(@PathVariable Long userId);
 }

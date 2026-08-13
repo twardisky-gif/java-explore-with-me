@@ -7,7 +7,8 @@ import ru.practicum.stats.dto.StatsDateFormat;
 import java.time.LocalDateTime;
 
 public record ParticipationRequestDto(
-        @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN) LocalDateTime created,
+        @JsonFormat(pattern = StatsDateFormat.DATE_TIME_PATTERN)
+        LocalDateTime created,
         Long event,
         Long id,
         Long requester,

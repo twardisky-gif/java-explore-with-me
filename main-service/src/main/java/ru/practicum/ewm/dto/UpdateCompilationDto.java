@@ -5,8 +5,10 @@ import jakarta.validation.constraints.Size;
 
 import java.util.Set;
 
-public record UpdateCompilationRequest(
+public record UpdateCompilationDto(
         Set<Long> events,
         Boolean pinned,
-        @Size(max = 50) @Pattern(regexp = ".*\\S.*") String title) {
+        @Size(max = 50)
+        @Pattern(regexp = ".*\\S.*")
+        String title) {
 }
