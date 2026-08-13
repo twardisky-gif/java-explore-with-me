@@ -1,0 +1,187 @@
+{
+  "info": {
+    "_postman_id": "9780aca5-0ef4-483c-a067-c13032d4f82b",
+    "name": "Explore With Me - Comments",
+    "description": "Basic API checks for the event comments feature.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "const suffix = Date.now().toString();",
+          "pm.collectionVariables.set('suffix', suffix);",
+          "const date = new Date(Date.now() + 24 * 60 * 60 * 1000);",
+          "const pad = value => value.toString().padStart(2, '0');",
+          "const formatted = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;",
+          "pm.collectionVariables.set('eventDate', formatted);"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ],
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080"},
+    {"key": "suffix", "value": ""},
+    {"key": "eventDate", "value": ""},
+    {"key": "ownerId", "value": ""},
+    {"key": "authorId", "value": ""},
+    {"key": "otherId", "value": ""},
+    {"key": "categoryId", "value": ""},
+    {"key": "eventId", "value": ""},
+    {"key": "commentId", "value": ""}
+  ],
+  "item": [
+    {
+      "name": "Prepare users",
+      "item": [
+        {
+          "name": "Create event owner",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"email\":\"owner-{{suffix}}@example.com\",\"name\":\"Event owner\"}"},
+            "url": "{{baseUrl}}/admin/users"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('ownerId', pm.response.json().id);"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Create comment author",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"email\":\"author-{{suffix}}@example.com\",\"name\":\"Comment author\"}"},
+            "url": "{{baseUrl}}/admin/users"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('authorId', pm.response.json().id);"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Create another user",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"email\":\"other-{{suffix}}@example.com\",\"name\":\"Another user\"}"},
+            "url": "{{baseUrl}}/admin/users"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('otherId', pm.response.json().id);"], "type": "text/javascript"}}]
+        }
+      ]
+    },
+    {
+      "name": "Prepare event",
+      "item": [
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"name\":\"Comments {{suffix}}\"}"},
+            "url": "{{baseUrl}}/admin/categories"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('categoryId', pm.response.json().id);"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Create event",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"annotation\":\"An event prepared for comment tests\",\"category\":{{categoryId}},\"description\":\"A published event used to verify the comments feature\",\"eventDate\":\"{{eventDate}}\",\"location\":{\"lat\":55.75,\"lon\":37.61},\"title\":\"Comments test event\"}"},
+            "url": "{{baseUrl}}/users/{{ownerId}}/events"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "pm.collectionVariables.set('eventId', pm.response.json().id);"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Reject comment for unpublished event",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"text\":\"This comment must not be created\"}"},
+            "url": "{{baseUrl}}/users/{{authorId}}/comments?eventId={{eventId}}"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 409', () => pm.response.to.have.status(409));"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Publish event",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"stateAction\":\"PUBLISH_EVENT\"}"},
+            "url": "{{baseUrl}}/admin/events/{{eventId}}"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]
+        }
+      ]
+    },
+    {
+      "name": "Comments API",
+      "item": [
+        {
+          "name": "Create comment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"text\":\"A useful event comment\"}"},
+            "url": "{{baseUrl}}/users/{{authorId}}/comments?eventId={{eventId}}"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 201', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.test('Comment fields are returned', () => { pm.expect(body.text).to.eql('A useful event comment'); pm.expect(body.author.id).to.eql(Number(pm.collectionVariables.get('authorId'))); });", "pm.collectionVariables.set('commentId', body.id);"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Get comment",
+          "request": {"method": "GET", "url": "{{baseUrl}}/comments/{{commentId}}"},
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Get event comments",
+          "request": {"method": "GET", "url": "{{baseUrl}}/comments?eventId={{eventId}}&from=0&size=10"},
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));", "pm.test('Comment list is not empty', () => pm.expect(pm.response.json()).to.have.lengthOf(1));"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Get author comments",
+          "request": {"method": "GET", "url": "{{baseUrl}}/users/{{authorId}}/comments?from=0&size=10"},
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));", "pm.test('Comment list is not empty', () => pm.expect(pm.response.json()).to.have.lengthOf(1));"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Reject update by another user",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"text\":\"Unauthorized update\"}"},
+            "url": "{{baseUrl}}/users/{{otherId}}/comments/{{commentId}}"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 404', () => pm.response.to.have.status(404));"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Update own comment",
+          "request": {
+            "method": "PATCH",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"text\":\"Updated event comment\"}"},
+            "url": "{{baseUrl}}/users/{{authorId}}/comments/{{commentId}}"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 200', () => pm.response.to.have.status(200));", "pm.test('Text was updated', () => pm.expect(pm.response.json().text).to.eql('Updated event comment'));"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Reject blank comment",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"text\":\"   \"}"},
+            "url": "{{baseUrl}}/users/{{authorId}}/comments?eventId={{eventId}}"
+          },
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 400', () => pm.response.to.have.status(400));"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Delete comment as admin",
+          "request": {"method": "DELETE", "url": "{{baseUrl}}/admin/comments/{{commentId}}"},
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 204', () => pm.response.to.have.status(204));"], "type": "text/javascript"}}]
+        },
+        {
+          "name": "Deleted comment is absent",
+          "request": {"method": "GET", "url": "{{baseUrl}}/comments/{{commentId}}"},
+          "event": [{"listen": "test", "script": {"exec": ["pm.test('Status code is 404', () => pm.response.to.have.status(404));"], "type": "text/javascript"}}]
+        }
+      ]
+    }
+  ]
+}

@@ -32,6 +32,18 @@ CREATE INDEX IF NOT EXISTS idx_events_initiator ON events (initiator_id);
 CREATE INDEX IF NOT EXISTS idx_events_category ON events (category_id);
 CREATE INDEX IF NOT EXISTS idx_events_state_date ON events (state, event_date);
 
+CREATE TABLE IF NOT EXISTS comments (
+    id BIGSERIAL PRIMARY KEY,
+    text VARCHAR(2000) NOT NULL,
+    author_id BIGINT NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    event_id BIGINT NOT NULL REFERENCES events (id) ON DELETE CASCADE,
+    created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    updated TIMESTAMP WITHOUT TIME ZONE NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_comments_event_created ON comments (event_id, created DESC);
+CREATE INDEX IF NOT EXISTS idx_comments_author_created ON comments (author_id, created DESC);
+
 CREATE TABLE IF NOT EXISTS participation_requests (
     id BIGSERIAL PRIMARY KEY,
     created TIMESTAMP WITHOUT TIME ZONE NOT NULL,

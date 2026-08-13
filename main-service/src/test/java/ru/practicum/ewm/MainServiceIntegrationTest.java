@@ -20,6 +20,7 @@ import java.util.Map;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -89,6 +90,63 @@ class MainServiceIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(eventJson(categoryId, eventDate)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldManageCommentsAndEnforceOwnership() throws Exception {
+        long ownerId = createUser("comment-owner@example.com", "Comment Owner");
+        long authorId = createUser("comment-author@example.com", "Comment Author");
+        long anotherUserId = createUser("comment-other@example.com", "Other User");
+        long categoryId = createCategory("Comment events");
+        String eventDate = LocalDateTime.now().plusDays(1).format(FORMATTER);
+        String eventResponse = mockMvc.perform(post("/users/{userId}/events", ownerId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson(categoryId, eventDate)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long eventId = objectMapper.readTree(eventResponse).get("id").asLong();
+
+        mockMvc.perform(post("/users/{userId}/comments", authorId)
+                        .param("eventId", String.valueOf(eventId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"text\":\"Not published yet\"}"))
+                .andExpect(status().isConflict());
+
+        mockMvc.perform(patch("/admin/events/{eventId}", eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"stateAction\":\"PUBLISH_EVENT\"}"))
+                .andExpect(status().isOk());
+
+        String commentResponse = mockMvc.perform(post("/users/{userId}/comments", authorId)
+                        .param("eventId", String.valueOf(eventId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"text\":\"A useful event comment\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.author.id", is((int) authorId)))
+                .andExpect(jsonPath("$.eventId", is((int) eventId)))
+                .andReturn().getResponse().getContentAsString();
+        long commentId = objectMapper.readTree(commentResponse).get("id").asLong();
+
+        mockMvc.perform(get("/comments").param("eventId", String.valueOf(eventId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is((int) commentId)));
+
+        mockMvc.perform(patch("/users/{userId}/comments/{commentId}", anotherUserId, commentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"text\":\"Someone else's edit\"}"))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(patch("/users/{userId}/comments/{commentId}", authorId, commentId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"text\":\"Updated useful comment\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.text", is("Updated useful comment")));
+
+        mockMvc.perform(delete("/admin/comments/{commentId}", commentId))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/comments/{commentId}", commentId))
+                .andExpect(status().isNotFound());
     }
 
     private long createUser(String email, String name) throws Exception {
