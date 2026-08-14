@@ -21,7 +21,8 @@ import java.util.List;
 
 @Service
 public class CommentServiceImpl implements CommentService {
-    private static final Sort COMMENT_SORT = Sort.by(Sort.Direction.DESC, "created");
+    private static final Sort COMMENT_SORT = Sort.by(Sort.Direction.DESC, "created")
+            .and(Sort.by(Sort.Direction.DESC, "id"));
     private final CommentRepository commentRepository;
     private final UserService userService;
     private final EventService eventService;

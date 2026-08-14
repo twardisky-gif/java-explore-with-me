@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS comments (
     updated TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_comments_event_created ON comments (event_id, created DESC);
-CREATE INDEX IF NOT EXISTS idx_comments_author_created ON comments (author_id, created DESC);
+CREATE INDEX IF NOT EXISTS idx_comments_event_created_id ON comments (event_id, created DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_comments_author_created_id ON comments (author_id, created DESC, id DESC);
 
 CREATE TABLE IF NOT EXISTS participation_requests (
     id BIGSERIAL PRIMARY KEY,

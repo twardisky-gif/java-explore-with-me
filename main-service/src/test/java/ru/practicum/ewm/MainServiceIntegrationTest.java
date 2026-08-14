@@ -9,6 +9,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.ewm.service.StatsGateway;
 import ru.practicum.stats.dto.StatsDateFormat;
@@ -38,6 +39,9 @@ class MainServiceIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @MockBean
     private StatsGateway statsGateway;
@@ -127,7 +131,41 @@ class MainServiceIntegrationTest {
                 .andReturn().getResponse().getContentAsString();
         long commentId = objectMapper.readTree(commentResponse).get("id").asLong();
 
-        mockMvc.perform(get("/comments").param("eventId", String.valueOf(eventId)))
+        String secondCommentResponse = mockMvc.perform(post("/users/{userId}/comments", authorId)
+                        .param("eventId", String.valueOf(eventId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"text\":\"Another useful event comment\"}"))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long secondCommentId = objectMapper.readTree(secondCommentResponse).get("id").asLong();
+
+        LocalDateTime sameCreated = LocalDateTime.now().minusMinutes(1);
+        jdbcTemplate.update("UPDATE comments SET created = ? WHERE id IN (?, ?)",
+                sameCreated, commentId, secondCommentId);
+
+        mockMvc.perform(get("/comments")
+                        .param("eventId", String.valueOf(eventId))
+                        .param("from", "0")
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is((int) secondCommentId)));
+
+        mockMvc.perform(get("/comments")
+                        .param("eventId", String.valueOf(eventId))
+                        .param("from", "1")
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is((int) commentId)));
+
+        mockMvc.perform(get("/users/{userId}/comments", authorId)
+                        .param("from", "0")
+                        .param("size", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", is((int) secondCommentId)));
+
+        mockMvc.perform(get("/users/{userId}/comments", authorId)
+                        .param("from", "1")
+                        .param("size", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", is((int) commentId)));
 
@@ -146,6 +184,12 @@ class MainServiceIntegrationTest {
                 .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/comments/{commentId}", commentId))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(delete("/users/{userId}/comments/{commentId}", authorId, secondCommentId))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/comments/{commentId}", secondCommentId))
                 .andExpect(status().isNotFound());
     }
 
