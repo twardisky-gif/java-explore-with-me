@@ -16,11 +16,9 @@ Build the application with `mvn clean install`, then start both services and
 their databases with `docker compose up --build`. The main API is available on
 port `8080`, and the statistics API on port `9090`.
 
-## Future feature
+## Comments feature
 
-The optional feature will be event comments, developed later in the
-`feature_comments` branch after the main service passes review. A user will be
-able to add a comment to an event and edit or delete their own comment. An
-administrator will be able to moderate and delete comments. The detailed API
-will be designed when that stage begins; no comment entity, endpoint, or table
-is included now.
+Users can comment on published events, edit or delete their own comments, and
+read comments with pagination. Administrators can delete any comment.
+
+Pull request: [feature_comments → main](https://github.com/twardisky-gif/java-explore-with-me/pull/4)
